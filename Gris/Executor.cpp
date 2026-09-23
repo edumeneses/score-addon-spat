@@ -16,10 +16,16 @@
 #include <ossia/detail/math.hpp>
 #include <ossia/network/value/value_conversion.hpp>
 
-#include <QByteArray>
+#include <score/document/DocumentContext.hpp>
+#include <score/tools/Bind.hpp>
 
+#include <QByteArray>
+#include <QTimer>
+
+#include <atomic>
 #include <cmath>
 #include <deque>
+#include <mutex>
 #include <memory>
 #include <vector>
 
@@ -27,6 +33,11 @@ namespace Gris
 {
 namespace
 {
+[[nodiscard]] std::string setupKey(SpatModel const& proc)
+{
+  return ossia::convert<std::string>(proc.speakerSetupInlet().value());
+}
+
 [[nodiscard]] ossia::value const* lastValue(ossia::value_inlet const& inlet) noexcept
 {
   auto const& data = inlet.data.get_data();
@@ -157,10 +168,14 @@ private:
       if(*v != m_lastSpeakerList)
       {
         m_lastSpeakerList = *v;
-        if(auto setup = speakerSetupFromValue(*v))
+        if(std::unique_lock lock{m_pendingMutex, std::try_to_lock})
         {
-          auto old = m_spat.adopt(Prepared::make(Layout::make(std::move(*setup)), m_spat.frames()));
-          dispose(std::move(old));
+          m_pendingList = *v;
+          m_hasPendingList.store(true, std::memory_order_release);
+        }
+        else
+        {
+          m_lastSpeakerList = ossia::value{};
         }
       }
     }
@@ -224,22 +239,26 @@ private:
     }
   }
 
-  void dispose(Prepared old) noexcept
-  {
-    if(!old.layout)
-      return;
-    auto holder = std::make_shared<Prepared>(std::move(old));
-    if(auto q = m_gc.lock())
-      q->enqueue([holder]() mutable { holder.reset(); });
-    else
-      m_graveyard.push_back(std::move(holder));
-  }
-
   std::shared_ptr<Ports> m_ports;
   int m_sourceCount{};
   Spatializer m_spat;
   std::weak_ptr<Execution::GCCommandQueue> m_gc;
-  std::vector<std::shared_ptr<Prepared>> m_graveyard;
+
+public:
+  [[nodiscard]] bool takePendingSpeakerList(ossia::value& out)
+  {
+    if(!m_hasPendingList.load(std::memory_order_acquire))
+      return false;
+    std::lock_guard lock{m_pendingMutex};
+    out = std::move(m_pendingList);
+    m_hasPendingList.store(false, std::memory_order_release);
+    return true;
+  }
+
+private:
+  std::mutex m_pendingMutex;
+  ossia::value m_pendingList;
+  std::atomic_bool m_hasPendingList{false};
 
   std::vector<std::pair<float, float>> m_spans{MAX_PROCESS_SOURCES, {0.f, 0.f}};
   ossia::value m_lastSpeakerList;
@@ -256,17 +275,96 @@ Executor::Executor(SpatModel& proc, const Execution::Context& ctx, QObject* pare
   auto const frames = std::max(1, ctx.execState->bufferSize);
   auto node = ossia::make_node<SpatNode>(
       *ctx.execState, proc.sourceCount(), frames, ctx.weakGCQueue());
-  node->adopt(Prepared::make(Layout::make(proc.speakerSetup()), frames));
+  node->adopt(Prepared::make(
+      Layout::cached(setupKey(proc), proc.speakerSetup()), frames));
   this->node = node;
   m_ossia_process = std::make_shared<ossia::node_process>(this->node);
 
   m_oldInlets = proc.inlets();
   m_oldOutlets = proc.outlets();
 
+  connectControls();
+
   connect(
       &proc.speakerSetupInlet(), &Process::ControlInlet::valueChanged, this,
       [this](const ossia::value&) { pushLayout(); });
   connect(&proc, &SpatModel::sourceCountChanged, this, [this](int) { recomputePorts(); });
+  con(ctx.doc.coarseUpdateTimer, &QTimer::timeout, this,
+      [this] { applyPendingSpeakerList(); });
+}
+
+void Executor::connectControls()
+{
+  auto n = std::dynamic_pointer_cast<SpatNode>(this->node);
+  if(!n)
+    return;
+
+  for(auto& c : m_controlConnections)
+    QObject::disconnect(c);
+  m_controlConnections.clear();
+
+  auto& proc = process();
+  auto const& inlets = proc.inlets();
+  auto const& exec = n->root_inputs();
+  auto const count = std::min(inlets.size(), exec.size());
+
+  for(std::size_t i = 0; i < count; i++)
+  {
+    if(int(i) == SpatModel::SpeakerSetupPort)
+      continue;
+
+    auto* ctl = qobject_cast<Process::ControlInlet*>(inlets[i]);
+    if(!ctl)
+      continue;
+    auto* port = dynamic_cast<ossia::value_inlet*>(exec[i]);
+    if(!port)
+      continue;
+
+    ctl->setupExecution(*port, this);
+    pushControlValue(port, ctl->value());
+
+    auto c = connect(
+        ctl, &Process::ControlInlet::valueChanged, this,
+        [this, port](const ossia::value& v) { pushControlValue(port, v); });
+    m_controlConnections.push_back(c);
+  }
+}
+
+void Executor::pushControlValue(ossia::value_inlet* port, ossia::value v)
+{
+  std::weak_ptr<ossia::graph_node> weak = this->node;
+  in_exec([port, weak, val = std::move(v)]() mutable {
+    if(auto n = weak.lock())
+      port->data.write_value(std::move(val), 0);
+  });
+}
+
+void Executor::applyPendingSpeakerList()
+{
+  auto n = std::dynamic_pointer_cast<SpatNode>(this->node);
+  if(!n)
+    return;
+
+  ossia::value list;
+  if(!n->takePendingSpeakerList(list))
+    return;
+
+  auto setup = speakerSetupFromValue(list);
+  if(!setup)
+    return;
+
+  auto payload = std::make_shared<Prepared>(
+      Prepared::make(Layout::make(std::move(*setup)), n->frames()));
+  std::weak_ptr<SpatNode> weak = n;
+  in_exec([weak, payload, gcq = system().weakGCQueue()]() mutable {
+    auto node = weak.lock();
+    if(!node)
+      return;
+    auto old = std::make_shared<Prepared>(node->adopt(std::move(*payload)));
+    payload.reset();
+    if(auto q = gcq.lock())
+      q->enqueue([old]() mutable { old.reset(); });
+  });
 }
 
 Executor::~Executor() = default;
@@ -276,8 +374,8 @@ void Executor::pushLayout()
   auto node = std::dynamic_pointer_cast<SpatNode>(this->node);
   if(!node)
     return;
-  auto payload = std::make_shared<Prepared>(
-      Prepared::make(Layout::make(process().speakerSetup()), node->frames()));
+  auto payload = std::make_shared<Prepared>(Prepared::make(
+      Layout::cached(setupKey(process()), process().speakerSetup()), node->frames()));
   std::weak_ptr<SpatNode> weak = node;
   in_exec([weak, payload, gcq = system().weakGCQueue()]() mutable {
     auto n = weak.lock();
@@ -369,5 +467,7 @@ void Executor::recomputePorts()
 
   m_oldInlets = new_inlets;
   m_oldOutlets = new_outlets;
+
+  connectControls();
 }
 } // namespace Gris

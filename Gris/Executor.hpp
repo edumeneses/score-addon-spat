@@ -5,6 +5,9 @@
 #include <Process/Execution/ProcessComponent.hpp>
 
 #include <ossia/dataflow/node_process.hpp>
+#include <ossia/dataflow/port.hpp>
+
+#include <vector>
 
 namespace Gris
 {
@@ -21,9 +24,13 @@ public:
 private:
   void pushLayout();
   void recomputePorts();
+  void connectControls();
+  void pushControlValue(ossia::value_inlet* port, ossia::value v);
+  void applyPendingSpeakerList();
 
   Process::Inlets m_oldInlets;
   Process::Outlets m_oldOutlets;
+  std::vector<QMetaObject::Connection> m_controlConnections;
 };
 
 using ExecutorFactory = Execution::ProcessComponentFactory_T<Executor>;

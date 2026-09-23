@@ -7,6 +7,7 @@
 #include <Gris/Algo/Vbap.hpp>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace Gris
@@ -42,6 +43,9 @@ struct Layout
   bool mbapUsable{};
 
   [[nodiscard]] static std::shared_ptr<Layout const> make(SpeakerSetup setup);
+
+  [[nodiscard]] static std::shared_ptr<Layout const>
+  cached(std::string const& key, SpeakerSetup setup);
 };
 
 struct Prepared
