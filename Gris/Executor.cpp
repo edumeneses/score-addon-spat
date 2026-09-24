@@ -116,12 +116,10 @@ public:
     auto const channels = std::size_t(std::max(0, m_spat.numOutputChannels()));
     ossia::audio_port& out = *audio_out;
     out.set_channels(channels);
-    for(std::size_t c = 0; c < channels; ++c)
-      out.channel(c).assign(std::size_t(frames), 0.);
     if(channels == 0)
       return;
 
-    auto const n = std::min(frames, m_spat.frames());
+    auto const n = std::size_t(std::min(frames, m_spat.frames()));
     auto const numSources = std::size_t(m_sourceCount);
     for(std::size_t s = 0; s < numSources; ++s)
     {
@@ -131,20 +129,21 @@ public:
       for(std::size_t c = 0; c < in.channels(); ++c)
       {
         auto const& src = in.channel(c);
-        auto const m = std::min(std::size_t(n), src.size());
+        auto const m = std::min(n, src.size());
         for(std::size_t i = 0; i < m; ++i)
           dst[i] += float(src[i]);
       }
     }
 
-    m_spat.process(n, GainInterpolation{m_interpolation}, m_attenuation);
+    m_spat.process(int(n), GainInterpolation{m_interpolation}, m_attenuation);
 
     for(std::size_t c = 0; c < channels; ++c)
     {
       auto& chan = out.channel(c);
+      chan.resize(std::size_t(frames));
       auto const* src = m_spat.outputBuffer(c);
-      for(int i = 0; i < n; ++i)
-        chan[std::size_t(i)] = double(src[i]);
+      std::copy_n(src, n, chan.begin());
+      std::fill(chan.begin() + n, chan.end(), 0.);
     }
   }
 
