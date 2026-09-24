@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <map>
-#include <mutex>
 
 namespace Gris
 {
@@ -117,29 +115,6 @@ std::shared_ptr<Layout const> Layout::make(SpeakerSetup setup)
   return layout;
 }
 
-std::shared_ptr<Layout const>
-Layout::cached(std::string const& key, SpeakerSetup setup)
-{
-  static std::mutex mutex;
-  static std::map<std::string, std::weak_ptr<Layout const>> cache;
-
-  std::lock_guard lock{mutex};
-  if(auto it = cache.find(key); it != cache.end())
-  {
-    if(auto alive = it->second.lock())
-      return alive;
-    cache.erase(it);
-  }
-
-  auto layout = make(std::move(setup));
-  cache[key] = layout;
-
-  for(auto it = cache.begin(); it != cache.end();)
-    it = it->second.expired() ? cache.erase(it) : std::next(it);
-
-  return layout;
-}
-
 Prepared Prepared::make(std::shared_ptr<Layout const> layout, int frames)
 {
   Prepared p;
@@ -168,6 +143,9 @@ Spatializer::~Spatializer() = default;
 Prepared Spatializer::adopt(Prepared next) noexcept
 {
   std::swap(m_prepared, next);
+  if(m_prepared.last.numSources() == next.last.numSources()
+     && m_prepared.last.numSpeakers() == next.last.numSpeakers())
+    std::swap(m_prepared.last, next.last);
   for(auto& s : m_sources)
     s.dirty = true;
   return next;

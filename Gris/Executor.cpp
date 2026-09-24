@@ -33,11 +33,6 @@ namespace Gris
 {
 namespace
 {
-[[nodiscard]] std::string setupKey(SpatModel const& proc)
-{
-  return ossia::convert<std::string>(proc.speakerSetupInlet().value());
-}
-
 [[nodiscard]] ossia::value const* lastValue(ossia::value_inlet const& inlet) noexcept
 {
   auto const& data = inlet.data.get_data();
@@ -273,21 +268,21 @@ Executor::Executor(SpatModel& proc, const Execution::Context& ctx, QObject* pare
     : ProcessComponent_T{proc, ctx, "GrisSpatComponent", parent}
 {
   auto const frames = std::max(1, ctx.execState->bufferSize);
-  auto node = ossia::make_node<SpatNode>(
+  this->node = ossia::make_node<SpatNode>(
       *ctx.execState, proc.sourceCount(), frames, ctx.weakGCQueue());
-  node->adopt(Prepared::make(
-      Layout::cached(setupKey(proc), proc.speakerSetup()), frames));
-  this->node = node;
   m_ossia_process = std::make_shared<ossia::node_process>(this->node);
 
   m_oldInlets = proc.inlets();
   m_oldOutlets = proc.outlets();
 
   connectControls();
+  useSetup(proc.layoutKey(), proc.speakerSetup());
 
   connect(
       &proc.speakerSetupInlet(), &Process::ControlInlet::valueChanged, this,
-      [this](const ossia::value&) { pushLayout(); });
+      [this](const ossia::value&) {
+    useSetup(process().layoutKey(), process().speakerSetup());
+  });
   connect(&proc, &SpatModel::sourceCountChanged, this, [this](int) { recomputePorts(); });
   con(ctx.doc.coarseUpdateTimer, &QTimer::timeout, this,
       [this] { applyPendingSpeakerList(); });
@@ -353,29 +348,27 @@ void Executor::applyPendingSpeakerList()
   if(!setup)
     return;
 
-  auto payload = std::make_shared<Prepared>(
-      Prepared::make(Layout::make(std::move(*setup)), n->frames()));
-  std::weak_ptr<SpatNode> weak = n;
-  in_exec([weak, payload, gcq = system().weakGCQueue()]() mutable {
-    auto node = weak.lock();
-    if(!node)
-      return;
-    auto old = std::make_shared<Prepared>(node->adopt(std::move(*payload)));
-    payload.reset();
-    if(auto q = gcq.lock())
-      q->enqueue([old]() mutable { old.reset(); });
-  });
+  useSetup("speakers:" + ossia::value_to_pretty_string(list), std::move(*setup));
 }
 
 Executor::~Executor() = default;
 
-void Executor::pushLayout()
+void Executor::useSetup(std::string key, SpeakerSetup setup)
+{
+  m_layoutKey = key;
+  requestLayout(key, std::move(setup), this, [this, key](LayoutPtr layout) {
+    if(key == m_layoutKey)
+      sendLayout(std::move(layout));
+  });
+}
+
+void Executor::sendLayout(LayoutPtr layout)
 {
   auto node = std::dynamic_pointer_cast<SpatNode>(this->node);
   if(!node)
     return;
-  auto payload = std::make_shared<Prepared>(Prepared::make(
-      Layout::cached(setupKey(process()), process().speakerSetup()), node->frames()));
+  auto payload
+      = std::make_shared<Prepared>(Prepared::make(std::move(layout), node->frames()));
   std::weak_ptr<SpatNode> weak = node;
   in_exec([weak, payload, gcq = system().weakGCQueue()]() mutable {
     auto n = weak.lock();

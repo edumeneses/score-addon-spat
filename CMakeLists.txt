@@ -22,6 +22,7 @@ set(HDRS
   Gris/Commands.hpp
   Gris/Executor.hpp
   Gris/Inspector.hpp
+  Gris/LayoutCache.hpp
   Gris/Metadata.hpp
   Gris/Model.hpp
   Gris/SpeakerList.hpp
@@ -67,6 +68,7 @@ set(SRCS
   Gris/Algo/Vbap.cpp
   Gris/Commands.cpp
   Gris/Executor.cpp
+  Gris/LayoutCache.cpp
   Gris/Model.cpp
   Gris/Serialization.cpp
   Gris/SpeakerList.cpp

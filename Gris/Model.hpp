@@ -10,8 +10,13 @@
 
 #include <verdigris>
 
+#include <memory>
+#include <string>
+
 namespace Gris
 {
+struct Layout;
+
 class SCORE_ADDON_SPAT_EXPORT SpatModel final : public Process::ProcessModel
 {
   SCORE_SERIALIZE_FRIENDS
@@ -50,10 +55,12 @@ public:
       : Process::ProcessModel{vis, parent}
   {
     vis.writeTo(*this);
+    init();
   }
 
   [[nodiscard]] SpeakerSetupInlet& speakerSetupInlet() const noexcept;
   [[nodiscard]] SpeakerSetup speakerSetup() const noexcept;
+  [[nodiscard]] std::string layoutKey() const;
 
   [[nodiscard]] int sourceCount() const noexcept { return m_sourceCount; }
   void setSourceCount(int count);
@@ -69,8 +76,11 @@ public:
       int, sourceCount READ sourceCount WRITE setSourceCount NOTIFY sourceCountChanged)
 
 private:
+  void init();
+  void prepareLayout();
   void addSourcePorts(int source, int& nextId);
 
   int m_sourceCount{defaultSourceCount};
+  std::shared_ptr<Layout const> m_layout;
 };
 } // namespace Gris

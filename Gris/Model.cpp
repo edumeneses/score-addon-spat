@@ -1,4 +1,5 @@
 #include <Gris/Algo/SpeakerSetupIO.hpp>
+#include <Gris/LayoutCache.hpp>
 #include <Gris/Model.hpp>
 
 #include <Process/Dataflow/Port.hpp>
@@ -36,9 +37,27 @@ SpatModel::SpatModel(
     addSourcePorts(source, nextId);
 
   metadata().setInstanceName(*this);
+  init();
 }
 
 SpatModel::~SpatModel() = default;
+
+void SpatModel::init()
+{
+  connect(
+      &speakerSetupInlet(), &Process::ControlInlet::valueChanged, this,
+      [this](const ossia::value&) { prepareLayout(); });
+  prepareLayout();
+}
+
+void SpatModel::prepareLayout()
+{
+  auto key = layoutKey();
+  requestLayout(key, speakerSetup(), this, [this, key](LayoutPtr layout) {
+    if(key == layoutKey())
+      m_layout = std::move(layout);
+  });
+}
 
 SpeakerSetupInlet& SpatModel::speakerSetupInlet() const noexcept
 {
@@ -48,6 +67,11 @@ SpeakerSetupInlet& SpatModel::speakerSetupInlet() const noexcept
 SpeakerSetup SpatModel::speakerSetup() const noexcept
 {
   return speakerSetupInlet().setup();
+}
+
+std::string SpatModel::layoutKey() const
+{
+  return ossia::convert<std::string>(speakerSetupInlet().value());
 }
 
 void SpatModel::setSourceCount(int count)
