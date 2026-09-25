@@ -6,8 +6,11 @@
 
 #include <ossia/network/value/value_conversion.hpp>
 
+#include <QWidget>
+
 #include <Gris/Algo/SpeakerSetupIO.hpp>
 #include <Gris/LayoutCache.hpp>
+#include <Gris/LiveSources.hpp>
 #include <Gris/Model.hpp>
 
 #include <wobjectimpl.h>
@@ -42,10 +45,16 @@ SpatModel::SpatModel(
   init();
 }
 
-SpatModel::~SpatModel() = default;
+SpatModel::~SpatModel()
+{
+  if(externalUI)
+    externalUI->close();
+}
 
 void SpatModel::init()
 {
+  m_live = std::make_shared<LiveSources>();
+
   if(foldMode() == Process::FoldMode::Auto)
     setFoldMode(Process::FoldMode::Unfolded);
 

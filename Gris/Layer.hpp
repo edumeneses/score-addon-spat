@@ -50,5 +50,11 @@ class LayerFactory final : public Process::EffectLayerFactory_Base
   score::ResizeableItem* makeItem(
       const Process::ProcessModel& proc, const Process::Context& ctx,
       QGraphicsItem* parent) const override;
+  bool hasExternalUI(
+      const Process::ProcessModel& proc,
+      const score::DocumentContext& ctx) const noexcept override;
+  QWidget* makeExternalUI(
+      Process::ProcessModel& proc, const score::DocumentContext& ctx,
+      QWidget* parent) const override;
 };
 }

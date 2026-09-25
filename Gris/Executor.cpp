@@ -20,6 +20,7 @@
 #include <Gris/Algo/Spatializer.hpp>
 #include <Gris/Algo/SpeakerSetupIO.hpp>
 #include <Gris/Executor.hpp>
+#include <Gris/LiveSources.hpp>
 #include <Gris/SpeakerList.hpp>
 
 #include <cmath>
@@ -82,9 +83,12 @@ public:
     }
   }
 
-  SpatNode(int sourceCount, int frames, std::weak_ptr<Execution::GCCommandQueue> gc)
+  SpatNode(
+      int sourceCount, int frames, std::weak_ptr<Execution::GCCommandQueue> gc,
+      std::shared_ptr<LiveSources> live)
       : m_spat{frames}
       , m_gc{std::move(gc)}
+      , m_live{std::move(live)}
   {
     adoptPorts(makePorts(sourceCount), sourceCount);
     m_outlets.push_back(&audio_out);
@@ -145,6 +149,14 @@ public:
       auto const* src = m_spat.outputBuffer(c);
       std::copy_n(src, n, chan.begin());
       std::fill(chan.begin() + n, chan.end(), 0.);
+
+      if(c < m_live->levels.size())
+      {
+        float peak{};
+        for(std::size_t i = 0; i < n; ++i)
+          peak = std::max(peak, std::abs(src[i]));
+        m_live->levels[c].store(peak, std::memory_order_relaxed);
+      }
     }
   }
 
@@ -207,6 +219,11 @@ private:
         auto const vec = ossia::convert<ossia::vec3f>(*v);
         m_spat.setSourcePosition(
             std::size_t(source), Position{CartesianVector{vec[0], vec[1], vec[2]}});
+        auto& live = m_live->sources[std::size_t(source)];
+        live.x.store(vec[0], std::memory_order_relaxed);
+        live.y.store(vec[1], std::memory_order_relaxed);
+        live.z.store(vec[2], std::memory_order_relaxed);
+        live.placed.store(true, std::memory_order_relaxed);
       }
 
       auto& spans = m_spans[std::size_t(source)];
@@ -227,9 +244,10 @@ private:
       if(auto const* v = lastValue(ports[base + SpatModel::Mode - 1]))
       {
         auto const mode = ossia::convert<std::string>(*v);
+        auto const mbap = mode.find("Cube") != std::string::npos;
         m_spat.setSourceMode(
-            std::size_t(source),
-            mode.find("Cube") != std::string::npos ? SpatMode::mbap : SpatMode::vbap);
+            std::size_t(source), mbap ? SpatMode::mbap : SpatMode::vbap);
+        m_live->sources[std::size_t(source)].mbap.store(mbap, std::memory_order_relaxed);
       }
     }
   }
@@ -238,6 +256,7 @@ private:
   int m_sourceCount{};
   Spatializer m_spat;
   std::weak_ptr<Execution::GCCommandQueue> m_gc;
+  std::shared_ptr<LiveSources> m_live;
 
 public:
   [[nodiscard]] bool takePendingSpeakerList(ossia::value& out)
@@ -269,7 +288,7 @@ Executor::Executor(SpatModel& proc, const Execution::Context& ctx, QObject* pare
 {
   auto const frames = std::max(1, ctx.execState->bufferSize);
   this->node = ossia::make_node<SpatNode>(
-      *ctx.execState, proc.sourceCount(), frames, ctx.weakGCQueue());
+      *ctx.execState, proc.sourceCount(), frames, ctx.weakGCQueue(), proc.liveSources());
   m_ossia_process = std::make_shared<ossia::node_process>(this->node);
 
   m_oldInlets = proc.inlets();

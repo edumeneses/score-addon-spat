@@ -18,6 +18,7 @@
 
 #include <Gris/Layer.hpp>
 #include <Gris/Model.hpp>
+#include <Gris/SpatView.hpp>
 
 #include <cmath>
 
@@ -289,5 +290,18 @@ score::ResizeableItem* LayerFactory::makeItem(
     QGraphicsItem* parent) const
 {
   return new SpatItem{safe_cast<const SpatModel&>(proc), ctx, parent};
+}
+
+bool LayerFactory::hasExternalUI(
+    const Process::ProcessModel&, const score::DocumentContext&) const noexcept
+{
+  return true;
+}
+
+QWidget* LayerFactory::makeExternalUI(
+    Process::ProcessModel& proc, const score::DocumentContext& ctx,
+    QWidget* parent) const
+{
+  return new SpatView{safe_cast<SpatModel&>(proc), ctx, parent};
 }
 }

@@ -15,6 +15,7 @@
 namespace Gris
 {
 struct Layout;
+struct LiveSources;
 
 class SCORE_ADDON_SPAT_EXPORT SpatModel final : public Process::ProcessModel
 {
@@ -60,6 +61,14 @@ public:
   [[nodiscard]] SpeakerSetupInlet& speakerSetupInlet() const noexcept;
   [[nodiscard]] SpeakerSetup speakerSetup() const noexcept;
   [[nodiscard]] std::string layoutKey() const;
+  [[nodiscard]] std::shared_ptr<Layout const> const& layout() const noexcept
+  {
+    return m_layout;
+  }
+  [[nodiscard]] std::shared_ptr<LiveSources> const& liveSources() const noexcept
+  {
+    return m_live;
+  }
 
   [[nodiscard]] int sourceCount() const noexcept { return m_sourceCount; }
   void setSourceCount(int count);
@@ -81,5 +90,6 @@ private:
 
   int m_sourceCount{defaultSourceCount};
   std::shared_ptr<Layout const> m_layout;
+  std::shared_ptr<LiveSources> m_live;
 };
 }

@@ -23,10 +23,12 @@ set(HDRS
   Gris/Executor.hpp
   Gris/Inspector.hpp
   Gris/Layer.hpp
+  Gris/LiveSources.hpp
   Gris/LayoutCache.hpp
   Gris/Metadata.hpp
   Gris/Model.hpp
   Gris/SpeakerList.hpp
+  Gris/SpatView.hpp
   Gris/SpeakerSetupInlet.hpp
 
   Spat/StereoToMonoModel.hpp
@@ -74,6 +76,7 @@ set(SRCS
   Gris/Model.cpp
   Gris/Serialization.cpp
   Gris/SpeakerList.cpp
+  Gris/SpatView.cpp
   Gris/SpeakerSetupInlet.cpp
 
   Spat/StereoToMonoModel.cpp
