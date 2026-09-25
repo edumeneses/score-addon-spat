@@ -60,10 +60,10 @@ SpeakersData SpeakerSetup::flattened() const
 
   for(auto const& group : groups)
   {
-    bool const rotated = !(
-        std::fpclassify(group.yaw.get()) == FP_ZERO
-        && std::fpclassify(group.pitch.get()) == FP_ZERO
-        && std::fpclassify(group.roll.get()) == FP_ZERO);
+    bool const rotated
+        = !(std::fpclassify(group.yaw.get()) == FP_ZERO
+            && std::fpclassify(group.pitch.get()) == FP_ZERO
+            && std::fpclassify(group.roll.get()) == FP_ZERO);
 
     Quaternion quat{};
     if(rotated)

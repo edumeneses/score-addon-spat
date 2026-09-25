@@ -1,17 +1,16 @@
 #pragma once
 
+#include <Process/Process.hpp>
+
 #include <Gris/Algo/SpeakerSetup.hpp>
 #include <Gris/Metadata.hpp>
 #include <Gris/SpeakerSetupInlet.hpp>
 
-#include <Process/Process.hpp>
-
 #include <score_addon_spat_export.h>
-
-#include <verdigris>
 
 #include <memory>
 #include <string>
+#include <verdigris>
 
 namespace Gris
 {
@@ -83,4 +82,4 @@ private:
   int m_sourceCount{defaultSourceCount};
   std::shared_ptr<Layout const> m_layout;
 };
-} // namespace Gris
+}

@@ -1,9 +1,9 @@
-#include <Gris/Algo/SpeakerSetupIO.hpp>
-
 #include <QByteArray>
 #include <QFile>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+
+#include <Gris/Algo/SpeakerSetupIO.hpp>
 
 namespace Gris
 {
@@ -34,7 +34,8 @@ constexpr auto CURRENT_SETUP_VERSION = 1;
 constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
 
 [[nodiscard]] float attrFloat(
-    QXmlStreamAttributes const& attrs, QString const& name, float fallback = 0.f) noexcept
+    QXmlStreamAttributes const& attrs, QString const& name,
+    float fallback = 0.f) noexcept
 {
   if(!attrs.hasAttribute(name))
     return fallback;
@@ -54,15 +55,18 @@ constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
 }
 
 [[nodiscard]] bool attrBool(
-    QXmlStreamAttributes const& attrs, QString const& name, bool fallback = false) noexcept
+    QXmlStreamAttributes const& attrs, QString const& name,
+    bool fallback = false) noexcept
 {
   if(!attrs.hasAttribute(name))
     return fallback;
   auto const value = attrs.value(name);
-  return value == QStringLiteral("1") || value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0;
+  return value == QStringLiteral("1")
+         || value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0;
 }
 
-[[nodiscard]] std::optional<CartesianVector> parseCartesianString(QStringView str) noexcept
+[[nodiscard]] std::optional<CartesianVector>
+parseCartesianString(QStringView str) noexcept
 {
   auto trimmed = str.toString().trimmed();
   if(trimmed.startsWith(QLatin1Char('(')) && trimmed.endsWith(QLatin1Char(')')))
@@ -96,8 +100,8 @@ constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
 
   SpeakerSetup setup;
   auto const rootAttrs = xml.attributes();
-  setup.spatMode
-      = spatModeFromString(rootAttrs.value(QStringLiteral("SPAT_MODE")).toString().toStdString());
+  setup.spatMode = spatModeFromString(
+      rootAttrs.value(QStringLiteral("SPAT_MODE")).toString().toStdString());
   if(setup.spatMode == SpatMode::invalid)
     setup.spatMode = SpatMode::vbap;
   setup.diffusion = attrFloat(rootAttrs, QStringLiteral("DIFFUSION"));
@@ -119,7 +123,9 @@ constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
       continue;
 
     bool ok{};
-    auto const patch = name.mid(int(std::char_traits<char>::length(LEGACY_SPEAKER_PREFIX))).toInt(&ok);
+    auto const patch
+        = name.mid(int(std::char_traits<char>::length(LEGACY_SPEAKER_PREFIX)))
+              .toInt(&ok);
     if(!ok)
       continue;
 
@@ -127,8 +133,8 @@ constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
     entry.patch = output_patch_t{patch};
 
     auto const attrs = xml.attributes();
-    entry.data.state
-        = sliceStateFromString(attrs.value(QStringLiteral("STATE")).toString().toStdString());
+    entry.data.state = sliceStateFromString(
+        attrs.value(QStringLiteral("STATE")).toString().toStdString());
     entry.data.gain = attrFloat(attrs, QStringLiteral("GAIN"));
     entry.data.isDirectOutOnly = attrBool(attrs, QStringLiteral("DIRECT_OUT_ONLY"));
 
@@ -174,7 +180,8 @@ constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
   while(!xml.atEnd())
   {
     auto const token = xml.readNext();
-    if(token == QXmlStreamReader::EndElement && xml.name() == QLatin1String("SpeakerSetup"))
+    if(token == QXmlStreamReader::EndElement
+       && xml.name() == QLatin1String("SpeakerSetup"))
       break;
     if(token != QXmlStreamReader::StartElement)
       continue;
@@ -187,9 +194,11 @@ constexpr auto MAIN_GROUP_NAME = "Main Speaker Group";
       while(!xml.atEnd())
       {
         auto const ringToken = xml.readNext();
-        if(ringToken == QXmlStreamReader::EndElement && xml.name() == QLatin1String("Ring"))
+        if(ringToken == QXmlStreamReader::EndElement
+           && xml.name() == QLatin1String("Ring"))
           break;
-        if(ringToken != QXmlStreamReader::StartElement || xml.name() != QLatin1String("Speaker"))
+        if(ringToken != QXmlStreamReader::StartElement
+           || xml.name() != QLatin1String("Speaker"))
           continue;
 
         auto const attrs = xml.attributes();
@@ -239,7 +248,8 @@ void readValueTreeGroup(
       auto const spkAttrs = xml.attributes();
       SpeakerEntry entry;
       entry.patch = output_patch_t{attrInt(spkAttrs, QLatin1String(VT_PATCH_ID), 1)};
-      if(auto const pos = parseCartesianString(spkAttrs.value(QLatin1String(VT_CARTESIAN))))
+      if(auto const pos
+         = parseCartesianString(spkAttrs.value(QLatin1String(VT_CARTESIAN))))
         entry.data.position = Position{*pos};
       entry.data.state = sliceStateFromString(
           spkAttrs.value(QLatin1String(VT_IO_STATE)).toString().toStdString());
@@ -264,8 +274,8 @@ void readValueTreeGroup(
 
   SpeakerSetup setup;
   auto const rootAttrs = xml.attributes();
-  setup.spatMode
-      = spatModeFromString(rootAttrs.value(QStringLiteral("SPAT_MODE")).toString().toStdString());
+  setup.spatMode = spatModeFromString(
+      rootAttrs.value(QStringLiteral("SPAT_MODE")).toString().toStdString());
   if(setup.spatMode == SpatMode::invalid)
     setup.spatMode = SpatMode::vbap;
   setup.diffusion = attrFloat(rootAttrs, QStringLiteral("DIFFUSION"));
@@ -297,10 +307,9 @@ SpeakerSetupReadResult readSpeakerSetup(QByteArray const& data)
     if(xml.name() == QLatin1String(LEGACY_ROOT))
     {
       auto const attrs = xml.attributes();
-      bool const isValueTree
-          = attrs.hasAttribute(QLatin1String(VT_SETUP_VERSION))
-            || attrs.hasAttribute(QLatin1String(VT_UUID))
-            || attrs.hasAttribute(QLatin1String(VT_NEXT_PATCH_ID));
+      bool const isValueTree = attrs.hasAttribute(QLatin1String(VT_SETUP_VERSION))
+                               || attrs.hasAttribute(QLatin1String(VT_UUID))
+                               || attrs.hasAttribute(QLatin1String(VT_NEXT_PATCH_ID));
       return isValueTree ? readValueTree(xml) : readLegacy(xml);
     }
 
@@ -336,7 +345,8 @@ QByteArray writeSpeakerSetup(SpeakerSetup const& setup)
   xml.writeStartDocument();
 
   xml.writeStartElement(QLatin1String(LEGACY_ROOT));
-  xml.writeAttribute(QLatin1String(VT_SETUP_VERSION), QString::number(CURRENT_SETUP_VERSION));
+  xml.writeAttribute(
+      QLatin1String(VT_SETUP_VERSION), QString::number(CURRENT_SETUP_VERSION));
   xml.writeAttribute(
       QStringLiteral("SPAT_MODE"), QString::fromUtf8(toString(setup.spatMode).data()));
   xml.writeAttribute(QStringLiteral("DIFFUSION"), QString::number(setup.diffusion));
@@ -346,13 +356,13 @@ QByteArray writeSpeakerSetup(SpeakerSetup const& setup)
   for(auto const& group : setup.groups)
     for(auto const& speaker : group.speakers)
       nextPatch = std::max(nextPatch, speaker.patch.get() + 1);
-  xml.writeAttribute(QLatin1String(VT_NEXT_PATCH_ID), QString::number(std::max(nextPatch, 1)));
+  xml.writeAttribute(
+      QLatin1String(VT_NEXT_PATCH_ID), QString::number(std::max(nextPatch, 1)));
 
   for(auto const& group : setup.groups)
   {
     xml.writeStartElement(QLatin1String(VT_GROUP));
-    xml.writeAttribute(
-        QLatin1String(VT_GROUP_NAME), QString::fromStdString(group.name));
+    xml.writeAttribute(QLatin1String(VT_GROUP_NAME), QString::fromStdString(group.name));
     xml.writeAttribute(QLatin1String(VT_CARTESIAN), cartesianToString(group.position));
     xml.writeAttribute(QLatin1String(VT_YAW), QString::number(group.yaw.get()));
     xml.writeAttribute(QLatin1String(VT_PITCH), QString::number(group.pitch.get()));
@@ -364,9 +374,11 @@ QByteArray writeSpeakerSetup(SpeakerSetup const& setup)
       xml.writeAttribute(
           QLatin1String(VT_PATCH_ID), QString::number(speaker.patch.get()));
       xml.writeAttribute(
-          QLatin1String(VT_CARTESIAN), cartesianToString(speaker.data.position.getCartesian()));
+          QLatin1String(VT_CARTESIAN),
+          cartesianToString(speaker.data.position.getCartesian()));
       xml.writeAttribute(
-          QLatin1String(VT_IO_STATE), QString::fromUtf8(toString(speaker.data.state).data()));
+          QLatin1String(VT_IO_STATE),
+          QString::fromUtf8(toString(speaker.data.state).data()));
       xml.writeAttribute(QLatin1String(VT_GAIN), QString::number(speaker.data.gain));
       xml.writeAttribute(
           QLatin1String(VT_HIGHPASS_FREQ), QString::number(speaker.data.highpassFreq));

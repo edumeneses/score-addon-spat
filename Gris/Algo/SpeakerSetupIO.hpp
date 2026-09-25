@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Gris/Algo/SpeakerSetup.hpp>
-
 #include <QString>
+
+#include <Gris/Algo/SpeakerSetup.hpp>
 
 #include <optional>
 
@@ -11,7 +11,7 @@ namespace Gris
 enum class SpeakerSetupFormat
 {
   unknown,
-  legacy,       //! <SPEAKER_SETUP VERSION="3.x">, flat SPEAKER_n list
+  legacy,
   intermediate,
   valueTree
 };
@@ -31,6 +31,7 @@ struct SpeakerSetupReadResult
 
 [[nodiscard]] QByteArray writeSpeakerSetup(SpeakerSetup const& setup);
 
-[[nodiscard]] QString writeSpeakerSetupFile(SpeakerSetup const& setup, QString const& path);
+[[nodiscard]] QString
+writeSpeakerSetupFile(SpeakerSetup const& setup, QString const& path);
 
 }

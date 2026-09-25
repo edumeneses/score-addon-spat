@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Gris/Metadata.hpp>
-
 #include <Effect/EffectFactory.hpp>
 
 #include <score/graphics/RectItem.hpp>
+
+#include <Gris/Metadata.hpp>
 
 #include <vector>
 
@@ -51,4 +51,4 @@ class LayerFactory final : public Process::EffectLayerFactory_Base
       const Process::ProcessModel& proc, const Process::Context& ctx,
       QGraphicsItem* parent) const override;
 };
-} // namespace Gris
+}

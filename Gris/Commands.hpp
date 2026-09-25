@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Gris/Model.hpp>
-
 #include <score/command/Command.hpp>
 #include <score/command/PropertyCommand.hpp>
 #include <score/model/path/Path.hpp>
 #include <score/model/path/PathSerialization.hpp>
+
+#include <Gris/Model.hpp>
 
 namespace Gris
 {

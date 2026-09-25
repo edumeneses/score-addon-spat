@@ -1,15 +1,11 @@
-#include <Gris/Algo/SpeakerSetupIO.hpp>
-#include <Gris/SpeakerSetupInlet.hpp>
-
 #include <Process/Commands/SetControlValue.hpp>
 
 #include <score/command/Dispatchers/CommandDispatcher.hpp>
 #include <score/document/DocumentContext.hpp>
 #include <score/graphics/RectItem.hpp>
-#include <score/tools/FilePath.hpp>
-
 #include <score/serialization/DataStreamVisitor.hpp>
 #include <score/serialization/JSONVisitor.hpp>
+#include <score/tools/FilePath.hpp>
 
 #include <ossia/network/value/value_conversion.hpp>
 
@@ -25,6 +21,9 @@
 #include <QSpinBox>
 #include <QTableWidget>
 #include <QVBoxLayout>
+
+#include <Gris/Algo/SpeakerSetupIO.hpp>
+#include <Gris/SpeakerSetupInlet.hpp>
 
 #include <wobjectimpl.h>
 
@@ -156,7 +155,7 @@ public:
         [this](int idx) {
       m_setup.spatMode = static_cast<Gris::SpatMode>(idx);
       setupChanged();
-        });
+    });
     connect(table, &QTableWidget::itemChanged, this, &SpeakerTable::onCellEdited);
   }
 
@@ -419,7 +418,7 @@ QWidget* WidgetFactory::SpeakerSetupWidget::make_widget(
       return;
     if(auto res = Gris::readSpeakerSetup(QByteArray::fromStdString(str)))
       widget->setSetup(std::move(*res.setup));
-      });
+  });
 
   return widget;
 }

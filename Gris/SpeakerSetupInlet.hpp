@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Gris/Algo/SpeakerSetup.hpp>
-
 #include <Process/Dataflow/Port.hpp>
 #include <Process/Dataflow/PortItem.hpp>
 
 #include <score/serialization/VisitorCommon.hpp>
+
+#include <Gris/Algo/SpeakerSetup.hpp>
 
 #include <score_addon_spat_export.h>
 

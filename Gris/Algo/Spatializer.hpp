@@ -116,4 +116,4 @@ private:
   SpeakersSpatGains m_scratch{};
 };
 
-} // namespace Gris
+}

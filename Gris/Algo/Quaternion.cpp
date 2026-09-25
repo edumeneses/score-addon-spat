@@ -28,7 +28,6 @@ getQuaternionFromEulerAngles(float yawParam, float pitchParam, float rollParam) 
       cosYaw * sinPitch * cosRoll - sinYaw * cosPitch * sinRoll,
       sinYaw * cosPitchCosRoll + cosYaw * sinPitchSinRoll,
       cosYaw * cosPitch * sinRoll + sinYaw * sinPitch * cosRoll,
-      -(cosYaw * cosPitchCosRoll - sinYaw * sinPitchSinRoll)
-  };
+      -(cosYaw * cosPitchCosRoll - sinYaw * sinPitchSinRoll)};
 }
 }

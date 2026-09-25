@@ -1,7 +1,8 @@
 #include <Gris/Algo/Spatializer.hpp>
 
-#include <algorithm>
 #include <cmath>
+
+#include <algorithm>
 
 namespace Gris
 {
@@ -54,7 +55,7 @@ void applyAttenuation(
     data[i] = s.lowpassZ * s.attenuationGain;
   }
 }
-} // namespace
+}
 
 std::shared_ptr<Layout const> Layout::make(SpeakerSetup setup)
 {
@@ -104,10 +105,10 @@ std::shared_ptr<Layout const> Layout::make(SpeakerSetup setup)
       constexpr float DIFFUSION_IN_MAX{0.f};
       constexpr float DIFFUSION_OUT_MIN{1.f};
       constexpr float DIFFUSION_OUT_MAX{8.f};
-      layout->mbap.fieldExponent
-          = ((layout->setup.diffusion - DIFFUSION_IN_MIN)
-             * (DIFFUSION_OUT_MAX - DIFFUSION_OUT_MIN) / (DIFFUSION_IN_MAX - DIFFUSION_IN_MIN))
-            + DIFFUSION_OUT_MIN;
+      layout->mbap.fieldExponent = ((layout->setup.diffusion - DIFFUSION_IN_MIN)
+                                    * (DIFFUSION_OUT_MAX - DIFFUSION_OUT_MIN)
+                                    / (DIFFUSION_IN_MAX - DIFFUSION_IN_MIN))
+                                   + DIFFUSION_OUT_MIN;
       layout->mbapUsable = true;
     }
   }
@@ -119,12 +120,14 @@ Prepared Prepared::make(std::shared_ptr<Layout const> layout, int frames)
 {
   Prepared p;
   auto const numSpeakers = layout ? layout->flat.size() : 0;
-  auto const numChannels = layout ? std::size_t(std::max(0, layout->numOutputChannels)) : 0;
+  auto const numChannels
+      = layout ? std::size_t(std::max(0, layout->numOutputChannels)) : 0;
   p.layout = std::move(layout);
   p.target.resize(MAX_PROCESS_SOURCES, numSpeakers);
   p.last.resize(MAX_PROCESS_SOURCES, numSpeakers);
   p.speakerPtrs.assign(numSpeakers, nullptr);
-  p.outScratch.assign(numChannels, std::vector<float>(std::size_t(std::max(0, frames)), 0.f));
+  p.outScratch.assign(
+      numChannels, std::vector<float>(std::size_t(std::max(0, frames)), 0.f));
   p.outPtrs.resize(numChannels);
   for(std::size_t c = 0; c < numChannels; ++c)
     p.outPtrs[c] = p.outScratch[c].data();
@@ -156,7 +159,8 @@ void Spatializer::setSourceCount(std::size_t count) noexcept
   m_sourceCount = std::min(count, MAX_PROCESS_SOURCES);
 }
 
-void Spatializer::setSourcePosition(std::size_t source, Position const& position) noexcept
+void Spatializer::setSourcePosition(
+    std::size_t source, Position const& position) noexcept
 {
   if(source >= m_sources.size())
     return;
@@ -234,7 +238,8 @@ void Spatializer::updateGains() noexcept
   }
 }
 
-void Spatializer::process(int numSamples, GainInterpolation interp, Attenuation atten) noexcept
+void Spatializer::process(
+    int numSamples, GainInterpolation interp, Attenuation atten) noexcept
 {
   auto const* L = m_prepared.layout.get();
   if(!L || L->flat.empty() || numSamples <= 0)
@@ -306,4 +311,4 @@ std::vector<Triplet> Spatializer::triplets() const
   return vbapExtractTriplets(*L->vbap);
 }
 
-} // namespace Gris
+}

@@ -1,8 +1,8 @@
-#include <Gris/LayoutCache.hpp>
-
 #include <QCoreApplication>
 #include <QPointer>
 #include <QThreadPool>
+
+#include <Gris/LayoutCache.hpp>
 
 #include <map>
 #include <vector>
@@ -35,7 +35,7 @@ void prune()
   auto& map = entries();
   for(auto it = map.begin(); it != map.end();)
     it = (!it->second.building && it->second.layout.expired()) ? map.erase(it)
-                                                                : std::next(it);
+                                                               : std::next(it);
 }
 
 void finish(std::string const& key, LayoutPtr const& layout)
@@ -56,7 +56,7 @@ void finish(std::string const& key, LayoutPtr const& layout)
 
   prune();
 }
-} // namespace
+}
 
 LayoutPtr findLayout(std::string const& key)
 {
@@ -84,9 +84,9 @@ void requestLayout(
 
   QThreadPool::globalInstance()->start([key, setup = std::move(setup)]() mutable {
     auto layout = Layout::make(std::move(setup));
-    QMetaObject::invokeMethod(
-        qApp, [key, layout = std::move(layout)] { finish(key, layout); },
-        Qt::QueuedConnection);
+    QMetaObject::invokeMethod(qApp, [key, layout = std::move(layout)] {
+      finish(key, layout);
+    }, Qt::QueuedConnection);
   });
 }
-} // namespace Gris
+}

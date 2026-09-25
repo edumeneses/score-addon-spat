@@ -32,9 +32,8 @@
 
 #pragma once
 
-#include <Gris/Algo/Types.hpp>
-
 #include <Gris/Algo/SpeakerSetup.hpp>
+#include <Gris/Algo/Types.hpp>
 
 #include <array>
 #include <cstddef>
@@ -45,38 +44,29 @@ namespace Gris
 struct SpeakerData;
 
 static auto constexpr MBAP_MATRIX_SIZE = 64;
-using matrix_t
-    = std::array<std::array<std::array<float, MBAP_MATRIX_SIZE + 1>, MBAP_MATRIX_SIZE + 1>, MBAP_MATRIX_SIZE + 1>;
+using matrix_t = std::array<
+    std::array<std::array<float, MBAP_MATRIX_SIZE + 1>, MBAP_MATRIX_SIZE + 1>,
+    MBAP_MATRIX_SIZE + 1>;
 
-struct MbapSpeaker {
-    Position position{};
-    output_patch_t outputPatch{};
+struct MbapSpeaker
+{
+  Position position{};
+  output_patch_t outputPatch{};
 };
 
-//==============================================================================
-struct MbapField {
-    std::vector<output_patch_t> outputOrder; /**< Physical output order. */
-    float fieldExponent;                     /**< Speaker gain exponent speakers. */
-    std::vector<matrix_t> amplitudeMatrix;   /**< Arrays of amplitude values [spk][x][y][z]. */
-    std::vector<Position> speakerPositions;  /**< Array of speakers. */
-    //==============================================================================
-    [[nodiscard]] size_t getNumSpeakers() const;
-    void reset();
+struct MbapField
+{
+  std::vector<output_patch_t> outputOrder;
+  float fieldExponent;
+  std::vector<matrix_t> amplitudeMatrix;
+  std::vector<Position> speakerPositions;
+
+  [[nodiscard]] size_t getNumSpeakers() const;
+  void reset();
 };
 
-/**
- * Creates the amplitude field according to the position of speakers.
- */
-MbapField mbapInit(SpeakersData const & speakers);
+MbapField mbapInit(SpeakersData const& speakers);
 
-/** \brief Calculates the gain of the outputs for a source's position.
- *
- * This function uses the position `pos` to retrieve the gain for every
- * output from the field and fill the array of float `gains`.
- * The user must provide the array of float and is responsible of its
- * memory. This array can be passed to the audio processing function
- * to control the gain of the signal outputs.
- */
-void mbap(SourceData const & source, SpeakersSpatGains & gains, MbapField const & field);
+void mbap(SourceData const& source, SpeakersSpatGains& gains, MbapField const& field);
 
-} // namespace Gris
+}

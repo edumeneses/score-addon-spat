@@ -1,6 +1,3 @@
-#include <Gris/Layer.hpp>
-#include <Gris/Model.hpp>
-
 #include <Process/Dataflow/Port.hpp>
 #include <Process/Dataflow/PortFactory.hpp>
 #include <Process/Dataflow/PortItem.hpp>
@@ -19,8 +16,12 @@
 
 #include <ossia-qt/invoke.hpp>
 
-#include <algorithm>
+#include <Gris/Layer.hpp>
+#include <Gris/Model.hpp>
+
 #include <cmath>
+
+#include <algorithm>
 #include <initializer_list>
 #include <vector>
 
@@ -95,7 +96,7 @@ constexpr qreal stackSpacing = 2.;
 constexpr int sourcesPerPage = 4;
 constexpr qreal pagerHeight = 13.;
 constexpr qreal pagerSpacing = 3.;
-} // namespace
+}
 
 SpatItem::SpatItem(
     const SpatModel& proc, const Process::Context& ctx, QGraphicsItem* parent)
@@ -144,9 +145,8 @@ void SpatItem::recreate()
   m_table = new PortTableLayout{tableColumns, m_root};
   m_outlets = new score::GraphicsDefaultOutletLayout{m_root};
 
-  Process::LayoutBuilderBase b{*this,       m_proc,         m_ctx,
-                               portFactory, m_proc.inlets(), m_proc.outlets(),
-                               m_table,     {}};
+  Process::LayoutBuilderBase b{*this,           m_proc,           m_ctx,   portFactory,
+                               m_proc.inlets(), m_proc.outlets(), m_table, {}};
 
   auto const& inlets = m_proc.inlets();
   auto place = [&](int index, QGraphicsItem* parent) {
@@ -220,7 +220,8 @@ void SpatItem::createPager(int pageCount)
   prev->setPos(0., center(prev->boundingRect().height()));
   label->setPos(arrowWidth + pagerSpacing, center(label->boundingRect().height()));
   next->setPos(
-      arrowWidth + 2. * pagerSpacing + labelWidth, center(next->boundingRect().height()));
+      arrowWidth + 2. * pagerSpacing + labelWidth,
+      center(next->boundingRect().height()));
   m_pager->setRect(
       {0., 0., 2. * arrowWidth + 2. * pagerSpacing + labelWidth + 2., pagerHeight});
 
@@ -289,4 +290,4 @@ score::ResizeableItem* LayerFactory::makeItem(
 {
   return new SpatItem{safe_cast<const SpatModel&>(proc), ctx, parent};
 }
-} // namespace Gris
+}

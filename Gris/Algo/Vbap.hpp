@@ -26,16 +26,13 @@
 
 #pragma once
 
-#include <Gris/Algo/Types.hpp>
-#include <vector>
-
 #include <Gris/Algo/SpeakerSetup.hpp>
-
-
+#include <Gris/Algo/Types.hpp>
 
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <vector>
 
 namespace Gris
 {
@@ -43,36 +40,34 @@ struct SourceData;
 
 using InverseMatrix = std::array<float, 9>;
 
-/* A struct for a loudspeaker triplet or pair (set). */
-struct SpeakerSet {
-    std::array<output_patch_t, 3> speakerNos;
-    InverseMatrix invMx;
-    std::array<float, 3> setGains;
-    float smallestWt;
-    int negGAm;
+struct SpeakerSet
+{
+  std::array<output_patch_t, 3> speakerNos;
+  InverseMatrix invMx;
+  std::array<float, 3> setGains;
+  float smallestWt;
+  int negGAm;
 };
 
-/* VBAP structure of n loudspeaker panning */
-struct VbapData {
-    std::array<output_patch_t, MAX_NUM_SPEAKERS> outputPatches{}; /* Physical outputs (starts at 1). */
-    std::array<float, MAX_NUM_SPEAKERS> gainsSmoothing{};         /* Loudspeaker gains smoothing. */
-    std::size_t dimension{};                                      /* Dimensions, 2 or 3. */
-    std::vector<SpeakerSet> speakerSets{};                        /* Loudspeaker triplet structure. */
-    int numOutputPatches{};                                       /* Number of output patches. */
-    int numSpeakers{};                                            /* Number of loudspeakers. */
-    Position direction{};
-    CartesianVector spreadingVector{}; /* Spreading vector. */
+struct VbapData
+{
+  std::array<output_patch_t, MAX_NUM_SPEAKERS> outputPatches{};
+  std::array<float, MAX_NUM_SPEAKERS> gainsSmoothing{};
+  std::size_t dimension{};
+  std::vector<SpeakerSet> speakerSets{};
+  int numOutputPatches{};
+  int numSpeakers{};
+  Position direction{};
+  CartesianVector spreadingVector{};
 };
 
-std::unique_ptr<VbapData> vbapInit(std::array<Position, MAX_NUM_SPEAKERS> & speakers,
-                                   int count,
-                                   int dimensions,
-                                   std::array<output_patch_t, MAX_NUM_SPEAKERS> const & outputPatches);
+std::unique_ptr<VbapData> vbapInit(
+    std::array<Position, MAX_NUM_SPEAKERS>& speakers, int count, int dimensions,
+    std::array<output_patch_t, MAX_NUM_SPEAKERS> const& outputPatches);
 
-/* Calculates gain factors using loudspeaker setup and angle direction.
- */
-void vbapCompute(SourceData const & source, SpeakersSpatGains & gains, VbapData & data) noexcept;
+void vbapCompute(
+    SourceData const& source, SpeakersSpatGains& gains, VbapData& data) noexcept;
 
-std::vector<Triplet> vbapExtractTriplets(VbapData const & data);
+std::vector<Triplet> vbapExtractTriplets(VbapData const& data);
 
-} // namespace Gris
+}

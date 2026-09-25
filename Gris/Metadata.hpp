@@ -17,5 +17,6 @@ PROCESS_METADATA(
     "Spatializes mono sources over a speaker setup with the GRIS VBAP (dome) and "
     "MBAP (cube) algorithms from SpatGRIS. One audio inlet per source; each source "
     "picks its algorithm independently, at realtime.",
-    "GRIS / SAT", (QStringList{"Spatialization", "VBAP", "MBAP", "SpatGRIS", "GRIS"}), {},
-    {}, QUrl{}, Process::ProcessFlags::SupportsAll | Process::ProcessFlags::DynamicPorts)
+    "GRIS / SAT", (QStringList{"Spatialization", "VBAP", "MBAP", "SpatGRIS", "GRIS"}),
+    {}, {}, QUrl{},
+    Process::ProcessFlags::SupportsAll | Process::ProcessFlags::DynamicPorts)

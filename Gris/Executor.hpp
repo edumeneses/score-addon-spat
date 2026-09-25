@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Gris/LayoutCache.hpp>
-#include <Gris/Model.hpp>
-
 #include <Process/Execution/ProcessComponent.hpp>
 
 #include <ossia/dataflow/node_process.hpp>
 #include <ossia/dataflow/port.hpp>
+
+#include <Gris/LayoutCache.hpp>
+#include <Gris/Model.hpp>
 
 #include <string>
 #include <vector>
@@ -38,4 +38,4 @@ private:
 };
 
 using ExecutorFactory = Execution::ProcessComponentFactory_T<Executor>;
-} // namespace Gris
+}

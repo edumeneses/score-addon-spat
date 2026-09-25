@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cmath>
+
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -321,11 +322,13 @@ struct CartesianVector
   {
     return !(*this == o);
   }
-  [[nodiscard]] constexpr CartesianVector operator+(CartesianVector const& o) const noexcept
+  [[nodiscard]] constexpr CartesianVector
+  operator+(CartesianVector const& o) const noexcept
   {
     return {x + o.x, y + o.y, z + o.z};
   }
-  [[nodiscard]] constexpr CartesianVector operator-(CartesianVector const& o) const noexcept
+  [[nodiscard]] constexpr CartesianVector
+  operator-(CartesianVector const& o) const noexcept
   {
     return {x - o.x, y - o.y, z - o.z};
   }
@@ -342,9 +345,18 @@ struct CartesianVector
     return {-x, -y, -z};
   }
 
-  [[nodiscard]] constexpr CartesianVector withX(float v) const noexcept { return {v, y, z}; }
-  [[nodiscard]] constexpr CartesianVector withY(float v) const noexcept { return {x, v, z}; }
-  [[nodiscard]] constexpr CartesianVector withZ(float v) const noexcept { return {x, y, v}; }
+  [[nodiscard]] constexpr CartesianVector withX(float v) const noexcept
+  {
+    return {v, y, z};
+  }
+  [[nodiscard]] constexpr CartesianVector withY(float v) const noexcept
+  {
+    return {x, v, z};
+  }
+  [[nodiscard]] constexpr CartesianVector withZ(float v) const noexcept
+  {
+    return {x, y, v};
+  }
   [[nodiscard]] constexpr CartesianVector translatedX(float d) const noexcept
   {
     return {x + d, y, z};
@@ -358,7 +370,10 @@ struct CartesianVector
     return {x, y, z + d};
   }
 
-  [[nodiscard]] constexpr float length2() const noexcept { return x * x + y * y + z * z; }
+  [[nodiscard]] constexpr float length2() const noexcept
+  {
+    return x * x + y * y + z * z;
+  }
   [[nodiscard]] float length() const noexcept { return std::sqrt(length2()); }
   [[nodiscard]] constexpr float dotProduct(CartesianVector const& o) const noexcept
   {
@@ -366,7 +381,8 @@ struct CartesianVector
   }
   [[nodiscard]] CartesianVector crossProduct(CartesianVector const& o) const noexcept
   {
-    CartesianVector const unscaled{y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x};
+    CartesianVector const unscaled{
+        y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x};
     return unscaled / unscaled.length();
   }
   [[nodiscard]] CartesianVector normalized() const noexcept
@@ -465,7 +481,8 @@ struct PolarVector
 inline CartesianVector::CartesianVector(PolarVector const& p) noexcept
 {
   auto const diffElev = HALF_PI_F - p.elevation.get();
-  auto const inverseElevation = std::fpclassify(diffElev) == FP_ZERO ? 0.0000001f : diffElev;
+  auto const inverseElevation
+      = std::fpclassify(diffElev) == FP_ZERO ? 0.0000001f : diffElev;
 
   x = p.length * std::sin(inverseElevation) * std::cos(p.azimuth.get());
   y = p.length * std::sin(inverseElevation) * std::sin(p.azimuth.get());
@@ -504,7 +521,10 @@ public:
   {
   }
 
-  [[nodiscard]] constexpr PolarVector const& getPolar() const noexcept { return m_polar; }
+  [[nodiscard]] constexpr PolarVector const& getPolar() const noexcept
+  {
+    return m_polar;
+  }
   [[nodiscard]] constexpr CartesianVector const& getCartesian() const noexcept
   {
     return m_cartesian;
@@ -514,7 +534,10 @@ public:
   {
     return m_cartesian == o.m_cartesian;
   }
-  [[nodiscard]] bool operator!=(Position const& o) const noexcept { return !(*this == o); }
+  [[nodiscard]] bool operator!=(Position const& o) const noexcept
+  {
+    return !(*this == o);
+  }
 
   Position& operator=(PolarVector const& p) noexcept
   {
@@ -581,12 +604,18 @@ public:
   {
     return Position{m_polar.elevatedClipped(d)};
   }
-  [[nodiscard]] Position pushed(float d) const noexcept { return Position{m_polar.pushed(d)}; }
+  [[nodiscard]] Position pushed(float d) const noexcept
+  {
+    return Position{m_polar.pushed(d)};
+  }
   [[nodiscard]] Position pushedWithPositiveRadius(float d) const noexcept
   {
     return Position{m_polar.pushedWithPositiveRadius(d)};
   }
-  [[nodiscard]] Position normalized() const noexcept { return Position{m_polar.normalized()}; }
+  [[nodiscard]] Position normalized() const noexcept
+  {
+    return Position{m_polar.normalized()};
+  }
   [[nodiscard]] Position translatedX(float d) const noexcept
   {
     return Position{m_cartesian.translatedX(d)};

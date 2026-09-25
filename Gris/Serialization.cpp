@@ -1,11 +1,11 @@
-#include <Gris/Model.hpp>
-
 #include <Process/Dataflow/PortFactory.hpp>
 #include <Process/Dataflow/PortSerialization.hpp>
 
 #include <score/application/ApplicationComponents.hpp>
 #include <score/serialization/JSONVisitor.hpp>
 #include <score/serialization/VisitorCommon.hpp>
+
+#include <Gris/Model.hpp>
 
 template <>
 void DataStreamReader::read(const Gris::SpatModel& proc)

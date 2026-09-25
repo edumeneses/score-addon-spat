@@ -1,9 +1,10 @@
-#include <Gris/SpeakerList.hpp>
-
 #include <ossia/network/value/value_conversion.hpp>
 
-#include <algorithm>
+#include <Gris/SpeakerList.hpp>
+
 #include <cmath>
+
+#include <algorithm>
 
 namespace Gris
 {
@@ -63,7 +64,7 @@ std::optional<ParsedSpeaker> parseSpeaker(ossia::value const& v)
       return std::nullopt;
   }
 }
-} // namespace
+}
 
 std::optional<SpeakerSetup> speakerSetupFromValue(ossia::value const& v)
 {
@@ -86,7 +87,8 @@ std::optional<SpeakerSetup> speakerSetupFromValue(ossia::value const& v)
   float maxAbs{};
   for(auto const& s : speakers)
     maxAbs = std::max(
-        {maxAbs, std::abs(s.position.x), std::abs(s.position.y), std::abs(s.position.z)});
+        {maxAbs, std::abs(s.position.x), std::abs(s.position.y),
+         std::abs(s.position.z)});
   float const scale = maxAbs > 1.7f ? 1.f / maxAbs : 1.f;
 
   SpeakerSetup setup;
@@ -105,4 +107,4 @@ std::optional<SpeakerSetup> speakerSetupFromValue(ossia::value const& v)
   setup.groups.push_back(std::move(group));
   return setup;
 }
-} // namespace Gris
+}

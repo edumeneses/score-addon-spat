@@ -10,8 +10,8 @@ namespace Gris
 enum class SpatMode : std::int8_t
 {
   invalid = -1,
-  vbap = 0, //! "Dome" in the SpatGRIS UI and file format
-  mbap,     //! "Cube"
+  vbap = 0,
+  mbap,
   hybrid
 };
 

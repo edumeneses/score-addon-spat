@@ -1,7 +1,3 @@
-#include <Gris/Algo/SpeakerSetupIO.hpp>
-#include <Gris/LayoutCache.hpp>
-#include <Gris/Model.hpp>
-
 #include <Process/Dataflow/Port.hpp>
 #include <Process/Dataflow/WidgetInlets.hpp>
 
@@ -9,6 +5,10 @@
 #include <score/serialization/VisitorCommon.hpp>
 
 #include <ossia/network/value/value_conversion.hpp>
+
+#include <Gris/Algo/SpeakerSetupIO.hpp>
+#include <Gris/LayoutCache.hpp>
+#include <Gris/Model.hpp>
 
 #include <wobjectimpl.h>
 
@@ -22,14 +22,16 @@ SpatModel::SpatModel(
 {
   m_inlets.push_back(
       new SpeakerSetupInlet{tr("Speaker setup"), Id<Process::Port>(0), this});
-  m_inlets.push_back(new Process::ValueInlet{tr("Speakers"), Id<Process::Port>(1), this});
+  m_inlets.push_back(
+      new Process::ValueInlet{tr("Speakers"), Id<Process::Port>(1), this});
   m_inlets.push_back(new Process::FloatSlider{
       0.f, 1.f, 0.f, tr("Interpolation"), Id<Process::Port>(2), this});
   m_inlets.push_back(new Process::LogFloatSlider{
       20.f, 20000.f, 16000.f, tr("Attenuation cutoff"), Id<Process::Port>(3), this});
   m_inlets.push_back(new Process::FloatSlider{
       0.f, 1.f, 0.f, tr("Max attenuation"), Id<Process::Port>(4), this});
-  m_outlets.push_back(new Process::AudioOutlet{tr("Speakers"), Id<Process::Port>(0), this});
+  m_outlets.push_back(
+      new Process::AudioOutlet{tr("Speakers"), Id<Process::Port>(0), this});
   safe_cast<Process::AudioOutlet*>(m_outlets.back())->setPropagate(true);
 
   int nextId = FixedInletCount;
@@ -128,8 +130,8 @@ void SpatModel::addSourcePorts(int source, int& nextId)
       0.f, 1.f, 0.f, tr("Source %1 azimuth span").arg(label),
       Id<Process::Port>(nextId++), this});
   m_inlets.push_back(new Process::FloatSlider{
-      0.f, 1.f, 0.f, tr("Source %1 zenith span").arg(label),
-      Id<Process::Port>(nextId++), this});
+      0.f, 1.f, 0.f, tr("Source %1 zenith span").arg(label), Id<Process::Port>(nextId++),
+      this});
   m_inlets.push_back(new Process::Enum{
       std::vector<std::string>{"Dome (VBAP)", "Cube (MBAP)"}, std::vector<QString>{},
       "Dome (VBAP)", tr("Source %1 mode").arg(label), Id<Process::Port>(nextId++),
@@ -138,4 +140,4 @@ void SpatModel::addSourcePorts(int source, int& nextId)
   for(auto i = m_inlets.size() - SourceInletCount; i < m_inlets.size(); ++i)
     m_inlets[i]->displayHandledExplicitly = true;
 }
-} // namespace Gris
+}

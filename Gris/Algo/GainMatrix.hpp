@@ -3,6 +3,7 @@
 #include <Gris/Algo/Types.hpp>
 
 #include <cmath>
+
 #include <cstddef>
 #include <vector>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Gris/Algo/Spatializer.hpp>
-
 #include <QObject>
+
+#include <Gris/Algo/Spatializer.hpp>
 
 #include <functional>
 #include <memory>
@@ -17,4 +17,4 @@ using LayoutPtr = std::shared_ptr<Layout const>;
 void requestLayout(
     std::string const& key, SpeakerSetup setup, QObject* context,
     std::function<void(LayoutPtr)> done);
-} // namespace Gris
+}

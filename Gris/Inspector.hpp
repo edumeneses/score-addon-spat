@@ -1,8 +1,5 @@
 #pragma once
 
-#include <Gris/Commands.hpp>
-#include <Gris/Model.hpp>
-
 #include <Process/Inspector/ProcessInspectorWidgetDelegate.hpp>
 #include <Process/Inspector/ProcessInspectorWidgetDelegateFactory.hpp>
 
@@ -13,6 +10,9 @@
 #include <QFormLayout>
 #include <QSignalBlocker>
 #include <QSpinBox>
+
+#include <Gris/Commands.hpp>
+#include <Gris/Model.hpp>
 
 namespace Gris
 {
@@ -55,4 +55,4 @@ class InspectorFactory final
 {
   SCORE_CONCRETE("7f2a1d63-84c9-4b05-a1de-3e9c07b5d2fa")
 };
-} // namespace Gris
+}

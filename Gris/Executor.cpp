@@ -1,12 +1,10 @@
-#include <Gris/Algo/SpeakerSetupIO.hpp>
-#include <Gris/Algo/Spatializer.hpp>
-#include <Gris/Executor.hpp>
-#include <Gris/SpeakerList.hpp>
-
 #include <Process/Dataflow/Cable.hpp>
 #include <Process/ExecutionContext.hpp>
 #include <Process/ExecutionSetup.hpp>
 #include <Process/ExecutionTransaction.hpp>
+
+#include <score/document/DocumentContext.hpp>
+#include <score/tools/Bind.hpp>
 
 #include <ossia/dataflow/execution_state.hpp>
 #include <ossia/dataflow/graph/graph_interface.hpp>
@@ -16,17 +14,20 @@
 #include <ossia/detail/math.hpp>
 #include <ossia/network/value/value_conversion.hpp>
 
-#include <score/document/DocumentContext.hpp>
-#include <score/tools/Bind.hpp>
-
 #include <QByteArray>
 #include <QTimer>
 
-#include <atomic>
+#include <Gris/Algo/Spatializer.hpp>
+#include <Gris/Algo/SpeakerSetupIO.hpp>
+#include <Gris/Executor.hpp>
+#include <Gris/SpeakerList.hpp>
+
 #include <cmath>
+
+#include <atomic>
 #include <deque>
-#include <mutex>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace Gris
@@ -40,7 +41,7 @@ namespace
     return nullptr;
   return &data.back().value;
 }
-} // namespace
+}
 
 class SpatNode final : public ossia::nonowning_graph_node
 {
@@ -282,7 +283,8 @@ Executor::Executor(SpatModel& proc, const Execution::Context& ctx, QObject* pare
       [this](const ossia::value&) {
     useSetup(process().layoutKey(), process().speakerSetup());
   });
-  connect(&proc, &SpatModel::sourceCountChanged, this, [this](int) { recomputePorts(); });
+  connect(
+      &proc, &SpatModel::sourceCountChanged, this, [this](int) { recomputePorts(); });
   con(ctx.doc.coarseUpdateTimer, &QTimer::timeout, this,
       [this] { applyPendingSpeakerList(); });
 }
@@ -422,9 +424,8 @@ void Executor::recomputePorts()
 
   setup.unregister_node_soft(old_inlets, old_outlets, this->node, commands);
 
-  commands.push_back(
-      [node = n, ports, count, inbuf, gcq = ctx.weakGCQueue(),
-       wg = std::weak_ptr{ctx.execGraph}]() mutable {
+  commands.push_back([node = n, ports, count, inbuf, gcq = ctx.weakGCQueue(),
+                      wg = std::weak_ptr{ctx.execGraph}]() mutable {
     if(auto g = wg.lock())
     {
       for(auto* p : node->root_inputs())
@@ -462,4 +463,4 @@ void Executor::recomputePorts()
 
   connectControls();
 }
-} // namespace Gris
+}
