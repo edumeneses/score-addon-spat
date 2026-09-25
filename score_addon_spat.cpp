@@ -3,6 +3,7 @@
 #include <Gris/Commands.hpp>
 #include <Gris/Executor.hpp>
 #include <Gris/Inspector.hpp>
+#include <Gris/Layer.hpp>
 #include <Gris/Model.hpp>
 #include <Gris/SpeakerSetupInlet.hpp>
 
@@ -33,7 +34,7 @@ std::vector<score::InterfaceBase*> score_addon_spat::factories(
   auto fx = instantiate_factories<
       score::ApplicationContext,
       FW<Process::ProcessModelFactory, Process::ProcessFactory_T<Gris::SpatModel>>,
-      FW<Process::LayerFactory, Process::EffectLayerFactory_T<Gris::SpatModel>>,
+      FW<Process::LayerFactory, Gris::LayerFactory>,
       FW<Process::PortFactory,
          Dataflow::WidgetInletFactory<
              Gris::SpeakerSetupInlet, WidgetFactory::SpeakerSetupWidget>>,

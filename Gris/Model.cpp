@@ -44,6 +44,14 @@ SpatModel::~SpatModel() = default;
 
 void SpatModel::init()
 {
+  if(foldMode() == Process::FoldMode::Auto)
+    setFoldMode(Process::FoldMode::Unfolded);
+
+  for(auto* inlet : m_inlets)
+    inlet->displayHandledExplicitly = true;
+  for(auto* outlet : m_outlets)
+    outlet->displayHandledExplicitly = true;
+
   connect(
       &speakerSetupInlet(), &Process::ControlInlet::valueChanged, this,
       [this](const ossia::value&) { prepareLayout(); });
@@ -126,5 +134,8 @@ void SpatModel::addSourcePorts(int source, int& nextId)
       std::vector<std::string>{"Dome (VBAP)", "Cube (MBAP)"}, std::vector<QString>{},
       "Dome (VBAP)", tr("Source %1 mode").arg(label), Id<Process::Port>(nextId++),
       this});
+
+  for(auto i = m_inlets.size() - SourceInletCount; i < m_inlets.size(); ++i)
+    m_inlets[i]->displayHandledExplicitly = true;
 }
 } // namespace Gris

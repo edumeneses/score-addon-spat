@@ -22,6 +22,7 @@ set(HDRS
   Gris/Commands.hpp
   Gris/Executor.hpp
   Gris/Inspector.hpp
+  Gris/Layer.hpp
   Gris/LayoutCache.hpp
   Gris/Metadata.hpp
   Gris/Model.hpp
@@ -68,6 +69,7 @@ set(SRCS
   Gris/Algo/Vbap.cpp
   Gris/Commands.cpp
   Gris/Executor.cpp
+  Gris/Layer.cpp
   Gris/LayoutCache.cpp
   Gris/Model.cpp
   Gris/Serialization.cpp
