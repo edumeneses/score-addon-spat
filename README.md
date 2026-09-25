@@ -8,6 +8,14 @@ VBAP (dome) and MBAP (cube) algorithms from
 [SpatGRIS](https://github.com/GRIS-UdeM/SpatGRIS). It reads SpatGRIS speaker
 setup files, and each source picks its algorithm independently.
 
+![The process in score, next to its speaker view on the Satosphère dome](docs/gris-spatialization.png)
+
+The node lists the inlets on the left, the settings shared by every source at
+the top, then one row per source (position, azimuth and zenith spans, VBAP or
+MBAP), four sources per page. The UI button opens a 3D view of the speaker
+setup that follows the sources while playing and lights each speaker with the
+level sent to it.
+
 ## Developing
 
 ### Test large speaker setups with an optimised build
